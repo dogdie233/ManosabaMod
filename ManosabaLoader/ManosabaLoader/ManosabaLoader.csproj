@@ -1,0 +1,85 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>ManosabaLoader</AssemblyName>
+    <Product>Manosaba Loader</Product>
+    <Version>1.0.0</Version>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <RestoreAdditionalProjectSources>
+      https://api.nuget.org/v3/index.json;
+      https://nuget.bepinex.dev/v3/index.json;
+      https://nuget.samboy.dev/v3/index.json
+    </RestoreAdditionalProjectSources>
+    <RootNamespace>ManosabaLoader</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.*" IncludeAssets="compile" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\interop\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Elringus.Naninovel.Runtime">
+      <HintPath>..\interop\Elringus.Naninovel.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GigaCreation.Essentials.SaveLoad">
+      <HintPath>..\interop\GigaCreation.Essentials.SaveLoad.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GigaCreation.NaninovelExtender.Audio">
+      <HintPath>..\interop\GigaCreation.NaninovelExtender.Audio.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GigaCreation.NaninovelExtender.Common">
+      <HintPath>..\interop\GigaCreation.NaninovelExtender.Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GigaCreation.NaninovelExtender.ExtendedActors">
+      <HintPath>..\interop\GigaCreation.NaninovelExtender.ExtendedActors.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GigaCreation.NaninovelExtender.Movies">
+      <HintPath>..\interop\GigaCreation.NaninovelExtender.Movies.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>..\interop\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Naninovel.Common">
+      <HintPath>..\interop\Naninovel.Common.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>..\interop\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>..\interop\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\interop\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\interop\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\interop\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.VideoModule">
+      <HintPath>..\interop\UnityEngine.VideoModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
