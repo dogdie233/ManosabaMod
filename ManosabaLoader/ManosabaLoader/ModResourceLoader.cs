@@ -157,7 +157,7 @@ namespace manosaba_mod
 @print "Mod说明：{modDescription}" author:{modAuthor} speed:1 waitInput:true Wait:true
 @print "Mod版本：{modVersion}" author:{modAuthor} speed:1 waitInput:true Wait:true
 @ClearBacklog
-@hide Stills-Middle,Stills-Front,Stills Lazy:false
+@hide Stills Lazy:false
 @back SubId:"Overlay" SolidColor tint:"#000000" time:0.5 Lazy:false
 @Wait "0.5"
 @goto {nextScenario}
