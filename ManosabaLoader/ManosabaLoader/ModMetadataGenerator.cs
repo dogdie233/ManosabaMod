@@ -8,6 +8,7 @@ using Naninovel.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -29,6 +30,9 @@ namespace ManosabaLoader
         {
             var meta = new Project();
             var cfg = ProjectConfigurationProvider.LoadOrDefault<ScriptsConfiguration>();
+            cfg.CompilerLocalization.AddExistingCommands();
+            cfg.CompilerLocalization.AddExistingFunctions();
+            Compiler.Initialize();
             meta.EntryScript = cfg.StartGameScript;
             meta.TitleScript = cfg.TitleScript;
             ModMetadataGeneratorLogMessage("Processing commands...");
@@ -173,20 +177,18 @@ namespace ManosabaLoader
             result = default;
             return false;
         }
-        private static Parameter ExtractParameterMetadata(CommandLocalization locale, Il2CppSystem.Reflection.FieldInfo field)
+        private static Parameter ExtractParameterMetadata(Il2CppSystem.Reflection.FieldInfo field)
         {
-            var l10n = locale.Parameters?.ToArray().FirstOrDefault(p => p.Id == field.Name);
+            ModMetadataGeneratorLogDebug(field.Name);
             var nullableName = typeof(INullable<>).Name;
             var namedName = typeof(INamed<>).Name;
             var meta = new Parameter
             {
                 Id = field.Name,
-                Alias = string.IsNullOrWhiteSpace(l10n?.Alias)
-                    ? field.GetCustomAttribute<Naninovel.Command.ParameterAliasAttribute>().Alias
-                    : l10n.Alias,
+                Alias = (field.GetCustomAttribute<Naninovel.Command.ParameterAliasAttribute>() == null)?"": field.GetCustomAttribute<Naninovel.Command.ParameterAliasAttribute>().Alias,
                 Required = field.GetCustomAttribute<Naninovel.Command.RequiredParameterAttribute>() != null,
                 Localizable = field.FieldType == Il2CppType.From(typeof(LocalizableTextParameter)),
-                DefaultValue = field.GetCustomAttribute<Naninovel.Command.ParameterDefaultValueAttribute>().Value,
+                DefaultValue = (field.GetCustomAttribute<Naninovel.Command.ParameterDefaultValueAttribute>() == null) ? "" : field.GetCustomAttribute<Naninovel.Command.ParameterDefaultValueAttribute>().Value.ToString(),
                 ValueContext = GetValueContext(field),
                 Documentation = new Documentation()
             };
@@ -226,12 +228,12 @@ namespace ManosabaLoader
                 TryResolveValueType(namedType, out valueType);
             }
         }
-        private static Parameter[] GenerateParametersMetadata(Il2CppSystem.Type commandType, CommandLocalization locale)
+        private static Parameter[] GenerateParametersMetadata(Il2CppSystem.Type commandType)
         {
             var result = new List<Parameter>();
             foreach (var fieldInfo in GetParameterFields(commandType))
                 if (!IsIgnored(fieldInfo))
-                    result.Add(ExtractParameterMetadata(locale, fieldInfo));
+                    result.Add(ExtractParameterMetadata(fieldInfo));
             return result.ToArray();
 
             bool IsIgnored(Il2CppSystem.Reflection.FieldInfo i) => IsIgnoredViaField(i) || IsIgnoredViaClass(i);
@@ -240,22 +242,21 @@ namespace ManosabaLoader
         }
         public static Il2CppReferenceArray<Naninovel.Metadata.Command> GenerateCommandsMetadata(LiteralMap<Il2CppSystem.Type> commands)
         {
+            ModMetadataGeneratorLogDebug("CommandsMetadata Count:" + commands.Count.ToString());
             var commandsMeta = new List<Naninovel.Metadata.Command>();
             foreach(var pair in commands)
             {
                 var commandType = pair.Value;
-
-                Compiler.Commands.TryGetValue(commandType.Name, out var locale);
+                ModMetadataGeneratorLogDebug("commandType:" + commandType.ToString());
                 var metadata = new Naninovel.Metadata.Command
                 {
                     Id = commandType.Name,
-                    Alias = !string.IsNullOrWhiteSpace(locale.Alias) ? locale.Alias
-                        : commandType.GetCustomAttribute<Naninovel.Command.CommandAliasAttribute>().Alias,
+                    Alias = (commandType.GetCustomAttribute<Naninovel.Command.CommandAliasAttribute>()==null)?"": commandType.GetCustomAttribute<Naninovel.Command.CommandAliasAttribute>().Alias,
                     Localizable = Il2CppType.From(typeof(Naninovel.Command.ILocalizable)).IsAssignableFrom(commandType),
                     Nest = ResolveNestMeta(commandType),
                     Branch = ResolveBranchMeta(commandType),
                     Documentation = new Documentation(),
-                    Parameters = GenerateParametersMetadata(commandType, locale)
+                    Parameters = GenerateParametersMetadata(commandType)
                 };
                 commandsMeta.Add(metadata);
             }
@@ -341,9 +342,9 @@ namespace ManosabaLoader
             Naninovel.Metadata.ValueType ResolveParameterType(Il2CppSystem.Type valueType)
             {
                 if (valueType.IsArray) valueType = valueType.GetElementType();
-                if (valueType == Il2CppType.From(typeof(Il2CppSystem.String))) return Naninovel.Metadata.ValueType.String;
-                if (valueType == Il2CppType.From(typeof(Il2CppSystem.Boolean))) return Naninovel.Metadata.ValueType.Boolean;
-                if (valueType == Il2CppType.From(typeof(Il2CppSystem.Int32))) return Naninovel.Metadata.ValueType.Integer;
+                if (valueType.Name == "String") return Naninovel.Metadata.ValueType.String;
+                if (valueType.Name == "Boolean") return Naninovel.Metadata.ValueType.Boolean;
+                if (valueType.Name == "Int32") return Naninovel.Metadata.ValueType.Integer;
                 return Naninovel.Metadata.ValueType.Decimal;
             }
 
