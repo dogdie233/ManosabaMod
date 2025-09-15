@@ -6,6 +6,10 @@ namespace ManosabaLoader.ModManager
 {
     public class ModItem
     {
+        public class ModCharacter
+        {
+            public string AuthorId { get; set; } = "Taffy";
+        }
         public class ModDescription
         {
             const string DefaultAuthor = "佚名";
@@ -15,6 +19,7 @@ namespace ManosabaLoader.ModManager
             public string Author { get; set; } = DefaultAuthor;
             public string Version { get; set; } = "1.0.0";
             public string Enter { get; set; } = "";
+            public ModCharacter[] Characters { get; set; } = [];
         }
         class ModItemException : Exception
         {

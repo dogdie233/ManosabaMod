@@ -60,6 +60,10 @@ namespace manosaba_mod
             foreach (var item in ModManager.Items)
             {
                 AddModLoader(item.Key);
+                foreach(var character in item.Value.Description.Characters)
+                {
+                    AddCharacterModLoader(item.Key, character.AuthorId);
+                }
             }
         }
         public static void AddModStartMenu()
@@ -185,9 +189,41 @@ namespace manosaba_mod
                 service.textLoader.Cast<ResourceLoader<TextAsset>>().AddLoadedResource(loadedResource);
             }
         }
+        //添加 Mod角色加载器
+        public static void AddCharacterModLoader(string prefix, string actorId)
+        {
+            {
+                //角色加载器
+                var service = Engine.GetServiceOrErr<CharacterManager>();
+                if (!service.Configuration.ActorMetadataMap.ContainsId(actorId))
+                {
+                    var character_meta = new CharacterMetadata();
+                    character_meta.Implementation = typeof(SpriteCharacter).AssemblyQualifiedName;
+                    var providerTypes = new Il2CppSystem.Collections.Generic.List<string>();
+                    providerTypes.Add(prefix.Replace("\\", "/"));
+                    character_meta.Loader = new() { PathPrefix = Path.Combine(prefix, "Characters").Replace("\\", "/"), ProviderTypes = providerTypes };
+                    character_meta.Pivot = new(.5f, .695f);
+                    service.Configuration.ActorMetadataMap.AddRecord(actorId, character_meta);
+                    ScriptLoaderLogDebug(string.Format("{0} Add Character:{1}", service.GetIl2CppType().FullName, actorId));
+                }
+            }
+        }
         //添加 Mod加载器
         public static void AddModLoader(string prefix)
         {
+
+            {
+                //默认资源加载器
+                var service = Engine.GetServiceOrErr<ResourceProviderManager>();
+                var localResourceProvider = new LocalResourceProvider(rootPath);
+                localResourceProvider.AddConverter(new NaniToScriptAssetConverter().Cast<IRawConverter<Script>>());
+                localResourceProvider.AddConverter(new TxtToTextAssetConverter().Cast<IRawConverter<TextAsset>>());
+                localResourceProvider.AddConverter(new WavToAudioClipConverter().Cast<IRawConverter<AudioClip>>());
+                localResourceProvider.AddConverter(new JpgOrPngToTextureConverter().Cast<IRawConverter<Texture2D>>());
+                service.providersMap.Add(prefix.Replace("\\", "/"), localResourceProvider.Cast<IResourceProvider>());
+                ScriptLoaderLogDebug(string.Format("{0} Path:{1}", service.GetIl2CppType().FullName, ProvisionSource.BuildFullPath(localResourceProvider.RootPath, prefix)));
+            }
+
             {
                 //剧本加载器
                 var service = Engine.GetServiceOrErr<WitchTrialsScriptPlayer>();
@@ -234,7 +270,7 @@ namespace manosaba_mod
 
             {
                 //背景加载器
-                string[] backIds = { "ModTexture", "MainBackground", "Stills", "Tricks" };
+                string[] backIds = { "MainBackground", "Stills", "Tricks" };
                 var service = Engine.GetServiceOrErr<BackgroundManagerExtended>();
                 foreach (var backId in backIds)
                 {
