@@ -8,7 +8,7 @@ namespace ManosabaLoader.ModManager
     {
         public class ModCharacter
         {
-            public string AuthorId { get; set; } = "Taffy";
+            public string ActorId { get; set; } = "Taffy";
         }
         public class ModDescription
         {
