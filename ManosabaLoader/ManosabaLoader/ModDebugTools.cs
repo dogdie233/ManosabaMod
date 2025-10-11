@@ -142,7 +142,7 @@ namespace ManosabaLoader
         }
 
         //莫名奇妙的内存泄漏，不知道是Bepinex的bug还是Unity的bug，总之就是内存泄漏
-        static Texture2D out_texture = new Texture2D(16, 16, TextureFormat.RGBA32, false);
+        static Texture2D out_texture = new Texture2D(16, 16, TextureFormat.ARGB32, false);
         static void WriteTex2D(RenderTexture render, string path)
         {
             WriteTex2D(render, path, render.width, render.height);
@@ -159,7 +159,7 @@ namespace ManosabaLoader
         }
         static void WriteTex2D(Texture2D texture, string path, int newWidth, int newHeight)
         {
-            texture.ResizeTextureProportionally(newWidth, newHeight);
+            //texture.ResizeTextureProportionally(newWidth, newHeight);
 
             BlittableArrayWrapper blittableArrayWrapper;
             Il2CppStructArray<byte> il2CppStructArray = new Il2CppStructArray<byte>(0);
@@ -268,7 +268,8 @@ namespace ManosabaLoader
             }
         }
         public static void DumpCharacterLayer()
-        {            ModDebugToolsLogMessage("DumpCharacterLayer");
+        {            
+            ModDebugToolsLogMessage("DumpCharacterLayer");
             var characterManager = Engine.GetServiceOrErr<CharacterManager>();
             foreach (var character_pair in characterManager.ManagedActors)
             {
@@ -281,6 +282,10 @@ namespace ManosabaLoader
                     continue;
                 }
                 LayeredCharacter layeredCharacter = character.Cast<LayeredCharacter>();
+                // 记录默认姿势
+                string default_composition_path = Path.Combine(".", "dump_character_layer", character_pair.Key, "default_composition.txt");
+                Directory.CreateDirectory(Path.GetDirectoryName(default_composition_path));
+                File.WriteAllText(default_composition_path, layeredCharacter.Behaviour.DefaultAppearance+":"+layeredCharacter.Behaviour.Composition.Replace("+LayerModifier", ""));
                 // 遍历图层
                 foreach (var layer in layeredCharacter.Behaviour.Drawer.layers)
                 {
@@ -311,9 +316,11 @@ namespace ManosabaLoader
                     file_list += "\n";
 
                     layer.Enabled = true;
-                    var renderTexture = layeredCharacter.Behaviour.Render(layeredCharacter.ActorMeta.PixelsPerUnit);
-                    WriteTex2D(renderTexture, Path.Combine(".", "dump_character_layer", character_pair.Key, layeredCameraLayer.Group, layeredCameraLayer.Name + ".png"), renderTexture.width / 4, renderTexture.height / 4);
-                    RenderTexture.ReleaseTemporary(renderTexture);
+                    layeredCharacter.Behaviour.Drawer.camera.clearFlags = CameraClearFlags.SolidColor;
+                    layeredCharacter.Behaviour.Drawer.camera.backgroundColor = new Color(1, 1, 1, 0);
+                    var targetRT = layeredCharacter.Behaviour.Render(layeredCharacter.ActorMeta.PixelsPerUnit);
+                    WriteTex2D(targetRT, Path.Combine(".", "dump_character_layer", character_pair.Key, layeredCameraLayer.Group, layeredCameraLayer.Name + ".png"), targetRT.width / 4, targetRT.height / 4);
+                    RenderTexture.ReleaseTemporary(targetRT);
                     layer.Enabled = false;
                 }
                 string info_path = Path.Combine(".", "dump_character_layer", character_pair.Key, "info.txt");
