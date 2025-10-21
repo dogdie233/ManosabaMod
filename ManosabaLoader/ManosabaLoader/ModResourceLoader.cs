@@ -62,7 +62,7 @@ namespace manosaba_mod
                 AddModLoader(item.Key);
                 foreach(var character in item.Value.Description.Characters)
                 {
-                    AddCharacterModLoader(item.Key, character.ActorId);
+                    AddCharacterModLoader(item.Key, character);
                 }
             }
         }
@@ -190,12 +190,12 @@ namespace manosaba_mod
             }
         }
         //添加 Mod角色加载器
-        public static void AddCharacterModLoader(string prefix, string actorId)
+        public static void AddCharacterModLoader(string prefix, ModItem.ModCharacter character)
         {
             {
                 //角色加载器
                 var service = Engine.GetServiceOrErr<CharacterManager>();
-                if (!service.Configuration.ActorMetadataMap.ContainsId(actorId))
+                if (!service.Configuration.ActorMetadataMap.ContainsId(character.ActorId))
                 {
                     var character_meta = new CharacterMetadata();
                     character_meta.Implementation = typeof(SpriteCharacter).AssemblyQualifiedName;
@@ -203,8 +203,9 @@ namespace manosaba_mod
                     providerTypes.Add(prefix.Replace("\\", "/"));
                     character_meta.Loader = new() { PathPrefix = Path.Combine(prefix, "Characters").Replace("\\", "/"), ProviderTypes = providerTypes };
                     character_meta.Pivot = new(.5f, .695f);
-                    service.Configuration.ActorMetadataMap.AddRecord(actorId, character_meta);
-                    ScriptLoaderLogDebug(string.Format("{0} Add Character:{1}", service.GetIl2CppType().FullName, actorId));
+                    character_meta.DisplayName = '\u200B' + character.DisplayName;
+                    service.Configuration.ActorMetadataMap.AddRecord(character.ActorId, character_meta);
+                    ScriptLoaderLogDebug(string.Format("{0} Add Character:{1}", service.GetIl2CppType().FullName, character.ActorId));
                 }
             }
         }
