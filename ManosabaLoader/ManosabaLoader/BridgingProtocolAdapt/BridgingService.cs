@@ -166,6 +166,7 @@ public class BridgingService
         {
             Engine.OnInitializationFinished -= refAction.Value;
             var player = Engine.GetServiceOrErr<IScriptPlayer>();
+            
             if (player.PlayedScript && player.PlayedScript.Path == scriptPath)
                 player.Rewind(lineIdx).Forget();
             else
