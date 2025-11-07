@@ -85,16 +85,8 @@
       <HintPath>..\interop\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.JSONSerializeModule">
-      <HintPath>..\interop\UnityEngine.JSONSerializeModule.dll</HintPath>
-		<Private>False</Private>
-    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\interop\UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.VideoModule">
-      <HintPath>..\interop\UnityEngine.VideoModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
