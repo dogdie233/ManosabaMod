@@ -61,6 +61,9 @@
       <HintPath>..\interop\Newtonsoft.Json.dll</HintPath>
 		<Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Addressables">
+      <HintPath>..\interop\Unity.Addressables.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.InputSystem">
       <HintPath>..\interop\Unity.InputSystem.dll</HintPath>
       <Private>False</Private>
@@ -87,6 +90,26 @@
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\interop\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GigaCreation.Essentials.Localization">
+      <HintPath>..\interop\GigaCreation.Essentials.Localization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UniTask">
+      <HintPath>..\interop\UniTask.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\interop\UnityEngine.UIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GigaCreation.Essentials.AddressablesUtils">
+      <HintPath>..\interop\GigaCreation.Essentials.AddressablesUtils.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.ResourceManager">
+      <HintPath>..\interop\Unity.ResourceManager.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

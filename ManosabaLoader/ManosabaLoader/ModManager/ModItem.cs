@@ -9,7 +9,6 @@ namespace ManosabaLoader.ModManager
         {
             public string ActorId { get; set; } = "Taffy";
             public string DisplayName { get; set; } = "";
-
         }
         public class ModDescription
         {
@@ -21,6 +20,7 @@ namespace ManosabaLoader.ModManager
             public string Version { get; set; } = "1.0.0";
             public string Enter { get; set; } = "";
             public ModCharacter[] Characters { get; set; } = [];
+            public CustomClueItem[] CustomClues { get; set; } = [];
         }
         class ModItemException : Exception
         {

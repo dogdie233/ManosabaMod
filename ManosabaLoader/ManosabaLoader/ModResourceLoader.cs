@@ -22,7 +22,7 @@ namespace ManosabaLoader
 {
     public static class ModResourceLoader
     {
-        
+
         public static Action<string> ScriptLoaderLogMessage;
         public static Action<string> ScriptLoaderLogDebug;
         public static Action<string> ScriptLoaderLogWarning;
@@ -36,6 +36,7 @@ namespace ManosabaLoader
         private static string modScriptEnterLabel = null;
 
         public static NamedString ModScriptEnter => new NamedString(modScriptEnter, modScriptEnterLabel);
+        public static ResourceLoader<Texture2D> ThumbnailLoader { get; private set; }
 
         public static void Init(Harmony instance, string enter, string label, bool directMode)
         {
@@ -52,9 +53,13 @@ namespace ManosabaLoader
         {
             foreach (var service in Engine.services)
             {
-                ScriptLoaderLogDebug(string.Format("Find Engine:{0}",Il2CppType.TypeFromPointer(service.ObjectClass).FullName));
+                ScriptLoaderLogDebug(string.Format("Find Engine:{0}", Il2CppType.TypeFromPointer(service.ObjectClass).FullName));
             }
-
+            
+            var resources = Engine.GetServiceOrErr<ResourceProviderManager>();
+            var thumbnailProviderList = new Il2CppSystem.Collections.Generic.List<IResourceProvider>();
+            ThumbnailLoader = new ResourceLoader<Texture2D>(thumbnailProviderList.Cast<Il2CppSystem.Collections.Generic.IList<IResourceProvider>>(), resources.Cast<IHoldersTracker>());
+            
             //添加Mod框架私有加载器
             var localResourceProvider = new LocalResourceProvider("");
             modProvisionSource = new ProvisionSource(localResourceProvider.Cast<IResourceProvider>(), Path.Combine(modScriptPrefix, "Scripts").Replace("\\", "/"));
@@ -63,18 +68,16 @@ namespace ManosabaLoader
             var rootPath = Plugin.Instance.ModRootPath;
             foreach (var item in ModManager.ModManager.Items)
             {
-                AddModLoader(rootPath, item.Key, "Scripts");
-                foreach(var character in item.Value.Description.Characters)
-                {
+                AddModLoader(rootPath, item.Key);
+                foreach (var character in item.Value.Description.Characters)
                     AddCharacterModLoader(item.Key, character);
-                }
             }
-            
+
             if (ScriptWorkingManager.IsEnabled)
             {
-                var root = Path.GetDirectoryName(ScriptWorkingManager.WorkspacePath);
-                var prefix = Path.GetFileName(ScriptWorkingManager.WorkspacePath);
-                AddModLoader(ScriptWorkingManager.WorkspacePath, "", "Scripts");
+                AddModLoader(ScriptWorkingManager.WorkspacePath, "");
+                foreach (var character in ScriptWorkingManager.ModInfo.Description.Characters)
+                    AddCharacterModLoader("", character);
             }
         }
         public static void AddModStartMenu()
@@ -124,7 +127,7 @@ namespace ManosabaLoader
             {
                 //脚本工作坊模式
                 var modItem = ScriptWorkingManager.ModInfo;
-                choice_list += 
+                choice_list +=
 $"""
 @choice "工作区：{modItem.Description.Name}" Lock:false play:true show:true
     @set "modName=\"{modItem.Description.Name}\""
@@ -141,7 +144,7 @@ $"""
             foreach (var item in ModManager.ModManager.Items)
             {
                 //超出单页上限，分页
-                if(choice_index>= perChoiceCount)
+                if (choice_index >= perChoiceCount)
                 {
                     if (choice_page > 0)
                     {
@@ -238,9 +241,9 @@ $"""
                 }
             }
         }
-        
+
         //添加 Mod加载器
-        public static void AddModLoader(string root, string prefix, string scenarioDirName)
+        public static void AddModLoader(string root, string prefix)
         {
 
             {
@@ -261,7 +264,7 @@ $"""
                 var ProvisionSources = service.scripts.ScriptLoader.Cast<ResourceLoader<Script>>().ProvisionSources;
                 var localResourceProvider = new LocalResourceProvider(root);
                 localResourceProvider.AddConverter(new NaniToScriptAssetConverter().Cast<IRawConverter<Script>>());
-                var provisionSource = new ProvisionSource(localResourceProvider.Cast<IResourceProvider>(), Path.Combine(prefix, scenarioDirName).Replace("\\", "/"));
+                var provisionSource = new ProvisionSource(localResourceProvider.Cast<IResourceProvider>(), Path.Combine(prefix, "Scripts").Replace("\\", "/"));
                 ProvisionSources.System_Collections_IList_Insert(0, provisionSource);
                 ScriptLoaderLogDebug(string.Format("{0} Path:{1}", service.GetIl2CppType().FullName, ProvisionSource.BuildFullPath(localResourceProvider.RootPath, provisionSource.PathPrefix)));
             }
@@ -314,10 +317,19 @@ $"""
                     ScriptLoaderLogDebug(string.Format("{0} Path:{1}", service.GetIl2CppType().FullName, ProvisionSource.BuildFullPath(localResourceProvider.RootPath, provisionSource.PathPrefix)));
                 }
             }
+
+            {
+                // 缩略图加载器
+                var localResourceProvider = new LocalResourceProvider(root);
+                localResourceProvider.AddConverter(new JpgOrPngToTextureConverter().Cast<IRawConverter<Texture2D>>());
+                var provisionSource = new ProvisionSource(localResourceProvider.Cast<IResourceProvider>(), Path.Combine(prefix, "Thumbnails").Replace("\\", "/"));
+                ThumbnailLoader.ProvisionSources.System_Collections_IList_Insert(0, provisionSource);
+                ScriptLoaderLogDebug($"{ThumbnailLoader.GetIl2CppType().FullName} Path:{ProvisionSource.BuildFullPath(localResourceProvider.RootPath, provisionSource.PathPrefix)}");
+            }
         }
 
         //修改 开始游戏 按钮的目标地址
-        public static void HookStartGame(TitleUi title) 
+        public static void HookStartGame(TitleUi title)
         {
             bool is_StartGame = false;
             foreach (var line in title.NaniScriptPlayer.PlayedScript.lines)
@@ -356,6 +368,8 @@ $"""
         static void TitleUi_Awake_Patch()
         {
             ModResourceLoader.Awake();
+
+            // var page = Engine.GetService<IUIManager>().GetUI<IWitchBookUi>().Cast<WitchBookUi>()._witchBookScreen.PageData[WitchBookCategory.Clue]._page.Cast<CluePage>();
         }
 
         [HarmonyPatch(typeof(TitleUi), nameof(TitleUi.Activate))]

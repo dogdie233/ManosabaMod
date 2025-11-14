@@ -1,12 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using System.Text.Json;
 
 using BepInEx.Logging;
-
-using Il2CppInterop.Runtime;
-using Il2CppInterop.Runtime.Runtime;
 
 using ManosabaLoader.BridgingProtocolAdapt;
 using ManosabaLoader.ModManager;
@@ -153,7 +149,7 @@ public static class ScriptWorkingManager
         UniTask.Run(new Action(() => { }))
             .ContinueWith(new Action(() =>
             {
-                var script = FromText(scriptPlayer.PlayedScript.Path, scriptContent, e.FullPath);
+                var script = Script.FromText(scriptPlayer.PlayedScript.Path, scriptContent, e.FullPath);
                 var oldScript = scriptPlayer.PlayedScript;
                 oldScript.textMap = script.textMap;
                 oldScript.playlist = script.playlist;
@@ -161,19 +157,5 @@ public static class ScriptWorkingManager
                 hotReloadLogger.LogDebug($"Hot-reloaded script at path: {e.FullPath} into currently playing script.");
             }))
             .Forget();
-    }
-
-    public static unsafe Script FromText(string path, string text, string file = null)
-    {
-        var numPtr = stackalloc IntPtr[3];
-        numPtr[0] = IL2CPP.ManagedStringToIl2Cpp(path);
-        numPtr[1] = IL2CPP.ManagedStringToIl2Cpp(text);
-        numPtr[2] = IL2CPP.ManagedStringToIl2Cpp(file);
-        var exc = IntPtr.Zero;
-        var methodPtr = (IntPtr)typeof(Script).GetField("NativeMethodInfoPtr_FromText_Public_Static_Script_String_String_String_0", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
-        var num = IL2CPP.il2cpp_runtime_invoke(methodPtr, IntPtr.Zero, (void**)numPtr, ref exc);
-        Il2CppInterop.Runtime.Il2CppException.RaiseExceptionIfNecessary(exc);
-        var ptr = num;
-        return ptr == IntPtr.Zero ? null : Il2CppObjectPool.Get<Script>(ptr);
     }
 }

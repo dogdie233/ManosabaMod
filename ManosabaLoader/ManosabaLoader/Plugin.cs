@@ -15,6 +15,7 @@ using HarmonyLib;
 
 using Il2CppInterop.Runtime;
 
+using ManosabaLoader.Clue;
 using ManosabaLoader.Utils;
 
 using UnityEngine;
@@ -117,6 +118,7 @@ namespace ManosabaLoader
         
         public static ManualLogSource LogIns => Log;
         public static Plugin Instance => _instance;
+        public ClueLoadService ClueLoadService { get; set; }
 
         private ConfigEntry<string> modRootPathConfig;
         private ConfigEntry<string> configScriptEnter;
@@ -222,6 +224,8 @@ namespace ManosabaLoader
             {
                 ScriptWorkingManager.Init();
             }
+            
+            ClueLoadService = new ClueLoadService(harmony);
 
             Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 
